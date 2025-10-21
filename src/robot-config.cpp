@@ -20,9 +20,9 @@ bool sol2Toggle = true;
 //This is because button presses are detected many times in a second, so it would just go on and off without bound.
 
 float Kp = 1.75;   // Proportional gain only for LB PID
-float Kpp = 0.5;   // Proportional gain for PID
+float Kpp = 0.4;   // Proportional gain for PID
 float Ki = 0.0;   // Integral gain for PID
-float Kd = 0.1;   // Derivative gain for PID
+float Kd = 0.45;   // Derivative gain for PID
 float driveangle;
 
 /*------------------------------------------------*/
@@ -31,15 +31,6 @@ float driveangle;
 /*                    ||||                        */
 /*                                                */
 /*---------------------\/-------------------------*/
-int auto_loop_controller_brain_update(){
-  while(true){
-    Controller1.Screen.clearScreen();
-    Controller1.Screen.setCursor(0,0);
-
-    wait(20,msec);
-  }
-  return 0;
-}
 
 
 
@@ -154,7 +145,7 @@ int rc_auto_loop_function_Controller1() {
 
       if ((Controller1.ButtonR1.pressing() == true)){
           intakeMotor.spin(reverse, 100, percent);
-          intakeMotor2.spin(reverse, 100, percent);
+          intakeMotor2.spin(reverse, 70, percent);
       }
       if ((Controller1.ButtonR2.pressing() == true)){
           intakeMotor.spin(forward, 100, percent);
@@ -240,7 +231,7 @@ void turn_to_angle(float targetAngle) {
         derivative = error - previousError;
         float D = Kd * derivative;
         
-        float KL = 2;
+        float KL = 1;
 
         // PID output
         motorPower = P + I + D;

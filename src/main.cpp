@@ -31,18 +31,18 @@ int autonchoice = 0;
 // define your global instances of motors and other devices here
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor leftMotorA = motor(PORT14, ratio6_1, false);
-motor leftMotorB = motor(PORT15, ratio6_1, true);
-motor leftMotorC = motor(PORT16, ratio6_1, false);
+motor leftMotorA = motor(PORT11, ratio6_1, false);
+motor leftMotorB = motor(PORT12, ratio6_1, true);
+motor leftMotorC = motor(PORT13, ratio6_1, false);
 motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB, leftMotorC);
-motor rightMotorA = motor(PORT11, ratio6_1, true);
-motor rightMotorB = motor(PORT12, ratio6_1, false);
-motor rightMotorC = motor(PORT13, ratio6_1, true);
+motor rightMotorA = motor(PORT14, ratio6_1, true);
+motor rightMotorB = motor(PORT15, ratio6_1, false);
+motor rightMotorC = motor(PORT16, ratio6_1, true);
 motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC);
 inertial DrivetrainInertial = inertial(PORT17);
 smartdrive Drivetrain = smartdrive(LeftDriveSmart, RightDriveSmart, DrivetrainInertial, 259.34, 289.56, 254, mm, 1.3333333333333);
-motor intakeMotor = motor(PORT7, ratio6_1, true);
-motor intakeMotor2 = motor(PORT8, ratio18_1, false);
+motor intakeMotor = motor(PORT5, ratio6_1, true);
+motor intakeMotor2 = motor(PORT4, ratio18_1, false);
 motor_group allIntake = motor_group(intakeMotor, intakeMotor2);
 digital_out sol1 = digital_out(Brain.ThreeWirePort.H);
 digital_out sols2 = digital_out(Brain.ThreeWirePort.G);
@@ -93,30 +93,127 @@ void pre_auton(void) {
 // Code for left side autonomous (basic)
 void autonomous_left(void){
   Brain.Screen.clearScreen();
-  if(practice == true){
-    wait(1500, msec);
-  }
-
-  Drivetrain.setDriveVelocity(50, percentUnits::pct);
+  turn_to_angle(-20);
+  allIntake.setVelocity(100, percent);
+  intakeMotor.spin(reverse);
+  Drivetrain.setDriveVelocity(60, percent);
   Drivetrain.drive(forward);
-  wait(500, msec);
+  wait(750, msec);
   Drivetrain.stop();
+  wait(500, msec);
+  intakeMotor.stop();
+  turn_to_angle(-143);
+  wait(30, msec);
+  Drivetrain.setDriveVelocity(50, percent);
+  Drivetrain.drive(forward);
+  wait(1250, msec);
+  intakeMotor.stop();
+  Drivetrain.stop();
+  turn_to_angle(-178);
+  wait(30, msec);
+  Drivetrain.setDriveVelocity(50,percent);
+  Drivetrain.drive(reverse);
+  wait(600, msec);
+  allIntake.spin(reverse);
+  wait(1200, msec);
+  allIntake.spin(forward);
+  wait(350, msec);
+  allIntake.spin(reverse);
+  wait(1000, msec);
+  allIntake.stop();
+  Drivetrain.stop();
+  sol1.set(true);
+  Drivetrain.setDriveVelocity(50, pct);
+  Drivetrain.drive(forward);
+  wait(400, msec);
+  Drivetrain.stop();
+  turn_to_angle(-180);
+  Drivetrain.drive(forward);
+  intakeMotor.spin(reverse);
+  wait(1300, msec);
+  Drivetrain.drive(reverse);
+  wait(250, msec);
+  Drivetrain.stop();
+  wait(600, msec);
+  Drivetrain.setDriveVelocity(50, percent);
+  Drivetrain.drive(reverse);
+  wait(200, msec);
+  turn_to_angle(-175);
+  Drivetrain.drive(reverse);
+  wait(900, msec);
+  allIntake.spin(reverse);
+  wait(400, msec);
+  Drivetrain.stop();
+  wait(400, msec);
+  Drivetrain.drive(forward);
+  wait(300, msec);
+  Drivetrain.stop();
+  Drivetrain.setDriveVelocity(90, percent);
+  Drivetrain.drive(reverse);
+
+
 }
 
 // Code for right side autonomous (basic)
 void autonomous_right(void) {
   Brain.Screen.clearScreen();
-  if(practice == true){
-    wait(1500, msec);
-  }
-  intakeMotor.spin(forward, 100, pct);
-  LeftDriveSmart.spin(reverse);
-  RightDriveSmart.spin(forward);
-  wait(1000, msec);
+  turn_to_angle(20);
+  allIntake.setVelocity(100, percent);
+  intakeMotor.spin(reverse);
+  Drivetrain.setDriveVelocity(60, percent);
+  Drivetrain.drive(forward);
+  wait(750, msec);
   Drivetrain.stop();
-  wait(1500, msec);
+  wait(500, msec);
   intakeMotor.stop();
-
+  turn_to_angle(143);
+  wait(30, msec);
+  Drivetrain.setDriveVelocity(50, percent);
+  Drivetrain.drive(forward);
+  wait(1250, msec);
+  intakeMotor.stop();
+  Drivetrain.stop();
+  turn_to_angle(178);
+  wait(30, msec);
+  Drivetrain.setDriveVelocity(50,percent);
+  Drivetrain.drive(reverse);
+  wait(600, msec);
+  allIntake.spin(reverse);
+  wait(1200, msec);
+  allIntake.spin(forward);
+  wait(350, msec);
+  allIntake.spin(reverse);
+  wait(1000, msec);
+  allIntake.stop();
+  Drivetrain.stop();
+  sol1.set(true);
+  Drivetrain.setDriveVelocity(50, pct);
+  Drivetrain.drive(forward);
+  wait(400, msec);
+  Drivetrain.stop();
+  turn_to_angle(180);
+  Drivetrain.drive(forward);
+  intakeMotor.spin(reverse);
+  wait(1300, msec);
+  Drivetrain.drive(reverse);
+  wait(250, msec);
+  Drivetrain.stop();
+  wait(600, msec);
+  Drivetrain.setDriveVelocity(50, percent);
+  Drivetrain.drive(reverse);
+  wait(200, msec);
+  turn_to_angle(175);
+  Drivetrain.drive(reverse);
+  wait(900, msec);
+  allIntake.spin(reverse);
+  wait(400, msec);
+  Drivetrain.stop();
+  wait(400, msec);
+  Drivetrain.drive(forward);
+  wait(300, msec);
+  Drivetrain.stop();
+  Drivetrain.setDriveVelocity(90, percent);
+  Drivetrain.drive(reverse);
 
 }
 
@@ -134,19 +231,28 @@ void autonomous_start( void ){
   while(true){
     Controller1.Screen.setCursor(0,0);
     Controller1.Screen.print("Ready");
-    if ((Brain.Screen.pressing() == true)||(Controller1.ButtonLeft.pressing()==true)||(Controller1.ButtonRight.pressing()==true)){
+    if ((Brain.Screen.pressing() == true)){
       int x = Brain.Screen.xPosition();
       
-      if ((x<=230)||(Controller1.ButtonY.pressing()==true)){
+      if ((x<=230)){
         practice = true;
         autonomous_left();
-      }else if((x>=250)||(Controller1.ButtonX.pressing()==true)){
+      }else if((x>=250)){
+        practice = true;
+        autonomous_right();
+      }
+    }
+    else if ((Controller1.ButtonY.pressing()==true)||(Controller1.ButtonX.pressing()==true)){      
+      if ((Controller1.ButtonY.pressing()==true)){
+        practice = true;
+        autonomous_left();
+      }else if((Controller1.ButtonX.pressing())){
         practice = true;
         autonomous_right();
       }
     }
   }
-} 
+}
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
@@ -165,8 +271,6 @@ void user(void) {
   // User control code here, inside the loop
     Brain.Screen.setFillColor(black);
     Brain.Screen.print("User Code");
-    thread auto_loop_controller_brain(auto_loop_controller_brain_update);
-    wait(200,msec);
     thread rc_auto_loop_controller(rc_auto_loop_function_Controller1);
     Brain.Screen.newLine();
     wait(20, msec); // Sleep the task for a short amount of time to
