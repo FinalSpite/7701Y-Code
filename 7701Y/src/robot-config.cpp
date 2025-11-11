@@ -62,7 +62,7 @@ int rc_auto_loop_function_Controller1() {
       int drivetrainLeftSideSpeed = Controller1.Axis1.position() + Controller1.Axis3.position();
       int drivetrainRightSideSpeed = Controller1.Axis3.position() - Controller1.Axis1.position();
       
-      int deadzone = 4;
+      int deadzone = 2;
 
       // check if the value is inside of the deadband range
       if (drivetrainLeftSideSpeed < deadzone && drivetrainLeftSideSpeed > -deadzone) {
@@ -173,6 +173,7 @@ int rc_auto_loop_function_Controller1() {
         }
       if ((Controller1.ButtonL1.pressing() == true)&&(intakesNeedToBeStopped == false)){
           intakeMotor.spin(reverse, 100, percent);
+          intakeMotor2.spin(forward, 5, percent);
           intakesNeedToBeStopped=true;
       }
       if ((Controller1.ButtonL2.pressing() == true)&&(intakesNeedToBeStopped == false)){
