@@ -75,7 +75,7 @@ void pre_auton(void) {
   while (DrivetrainInertial.isCalibrating()) {
     wait(25, msec);
   }
-  wait(250, msec);
+  wait(25, msec);
   // reset the screen now that the calibration is complete
   Brain.Screen.clearScreen();
   Brain.Screen.setCursor(1,1);
@@ -93,86 +93,99 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/ 
 
 // Code for left side autonomous (basic)
-void autonomous_left(void){
+void autonomous_skills(void){
+  smoothDrive(40, 300);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(45);
   intakeMotor.spin(reverse, 100, percent);
   intakeMotor2.spin(forward, 12, percent);
-  smoothDrive(80, 1200);
+  smoothDrive(85, 1400);
+  wait(25, msec);        
+  Drivetrain.stop();     
+  turn_to_angle(135);
+  smoothDrive(90, 1400);
   Drivetrain.stop();
-  wait(20, msec);
-  Drivetrain.stop();
-  wait(200, msec);
-  Drivetrain.stop();
-  turn_to_angle(-116);
-  allIntake.stop();
-  smoothDrive(95, 1400);
-  wait(100, msec);
-  turn_to_angle(-162);
-  smoothDrive(-75, 1050);
+  turn_to_angle(180);
+  smoothDrive(-75,1050);
   allIntake.spin(reverse, 100, percent);
-  wait(1400 ,msec);
+  wait(1500, msec);
   Drivetrain.stop();
+  allIntake.stop();
   sol1.set(true);
-  allIntake.stop();
-  smoothDrive(50, 400);
-  turn_to_angle(-165);
-  smoothDrive(85, 1475);
-  intakeMotor.spin(reverse, 100, percent);
-  intakeMotor2.spin(forward, 5, percent);
-  jitter(1800);
+  smoothDrive(40, 300);
   Drivetrain.stop();
-  Drivetrain.setDriveVelocity(90, percent);
-  Drivetrain.drive(reverse);
-  wait(1000, msec);
+  turn_to_angle(180);
+  smoothDrive(85, 1000);
+  Drivetrain.stop();
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  jitter(3000);
+  smoothDrive(-100, 1250);
   allIntake.spin(reverse, 100, percent);
+  wait(1500, msec);
+  Drivetrain.stop();
+  allIntake.stop();
+  smoothDrive(75, 700);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(-45);
+  smoothDrive(90, 1400);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(-90);
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  smoothDrive(90, 2000);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(-135);
+  smoothDrive(90, 1400);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(-180);
+  smoothDrive(-75,1050);
+  allIntake.spin(reverse, 100, percent);
+  wait(1500, msec);
+  Drivetrain.stop();
+  allIntake.stop();
+  sol1.set(true);
+  smoothDrive(40, 300);
+  Drivetrain.stop();
+  turn_to_angle(-180);
+  smoothDrive(85, 1000);
+  Drivetrain.stop();
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  jitter(3000);
+  smoothDrive(-100, 1250);
+  allIntake.spin(reverse, 100, percent);
+  wait(1500, msec);
+  Drivetrain.stop();
+  allIntake.stop();
 }
 
 // Code for right side autonomous (basic)
-void autonomous_right(void) {
-  intakeMotor.spin(reverse, 100, percent);
-  intakeMotor2.spin(forward, 12, percent);
-  smoothDrive(80, 1200);
-  Drivetrain.stop();
-  wait(20, msec);
-  Drivetrain.stop();
-  wait(200, msec);
-  Drivetrain.stop();
-  turn_to_angle(116);
-  allIntake.stop();
-  smoothDrive(95, 1400);
-  wait(100, msec);
-  turn_to_angle(162);
-  smoothDrive(-75, 1050);
-  allIntake.spin(reverse, 100, percent);
-  wait(1400 ,msec);
-  Drivetrain.stop();
+void autonomous_cheap(void) {
+  wait(24, msec);
   sol1.set(true);
-  allIntake.stop();
-  smoothDrive(50, 400);
-  turn_to_angle(165);
-  smoothDrive(85, 1475);
-  intakeMotor.spin(reverse, 100, percent);
-  intakeMotor2.spin(forward, 5, percent);
-  jitter(1800);
-  Drivetrain.stop();
-  Drivetrain.setDriveVelocity(90, percent);
-  Drivetrain.drive(reverse);
-  wait(1000, msec);
-  allIntake.spin(reverse, 100, percent);
+  wait(2000, msec);
+  sol1.set(false);
 }
 
 void autonomous_start( void ){
   Controller1.Screen.clearScreen();
   Brain.Screen.setFillColor(green);
   Brain.Screen.drawRectangle(0,0,230,272);
-  Brain.Screen.printAt(10,45,"LEFT");
+  Brain.Screen.printAt(10,45,"CHEAP");
 
   Brain.Screen.setFillColor(red);
   Brain.Screen.drawRectangle(250,0,230,272);
-  Brain.Screen.printAt(260,45, "RIGHT");
+  Brain.Screen.printAt(260,45, "REAL");
   Controller1.Screen.setCursor(0,0);
   Controller1.Screen.print("                       ");
   Controller1.Screen.newLine();
-  Controller1.Screen.print("Y: LEFT       A: RIGHT");
+  Controller1.Screen.print("Y: CHEAP        A: REAL");
   Controller1.Screen.newLine();
   Controller1.Screen.print("                       ");
 
@@ -182,36 +195,28 @@ void autonomous_start( void ){
       int x = Brain.Screen.xPosition();
       
       if ((x<=230)){
-        practice = true;
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
         drawLogo();
-        wait(1000, msec);
-        autonomous_left();
+        Competition.autonomous(autonomous_cheap);
       }else if((x>=250)){
-        practice = true;
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
         drawLogo();
-        wait(1000, msec);
-        autonomous_right();
+        Competition.autonomous(autonomous_skills);
       }
     }
     else if ((Controller1.ButtonY.pressing()==true)||(Controller1.ButtonA.pressing()==true)){      
       if ((Controller1.ButtonY.pressing()==true)){
-        practice = true;
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
         drawLogo();
-        wait(1000, msec);
-        autonomous_left();
+        Competition.autonomous(autonomous_cheap);
       }else if((Controller1.ButtonA.pressing())){
-        practice = true;
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
         drawLogo();
-        wait(1000, msec);
-        autonomous_right();
+        Competition.autonomous(autonomous_skills);
       }
     }
   }
@@ -252,20 +257,13 @@ int main() {
 
  // Set up callbacks for autonomous and driver control periods based on button presses on the run screen.
   if (autonchoice == 0){
+    Brain.Screen.clearScreen();
+    Controller1.Screen.clearScreen();
     drawLogo();
-    Competition.autonomous(autonomous_left);
     Competition.drivercontrol(user);
   } else if (autonchoice == 1){
-    drawLogo();
-    Competition.autonomous(autonomous_right);
-    Competition.drivercontrol(user);
-  } else if (autonchoice == 2){
-    drawLogo();
-    user();
-  } else if(autonchoice == 3){
     autonomous_start();
   }
-
   // Prevent main from exiting with an infinite loop.
   while (true) {
     wait(30, msec);
