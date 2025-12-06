@@ -94,9 +94,6 @@ void pre_auton(void) {
 
 // Code for left side autonomous (basic)
 void autonomous_skills(void){
-  smoothDrive(40, 300);
-  Drivetrain.stop();
-  wait(25, msec);
   turn_to_angle(45);
   intakeMotor.spin(reverse, 100, percent);
   intakeMotor2.spin(forward, 12, percent);
@@ -260,6 +257,7 @@ int main() {
     Brain.Screen.clearScreen();
     Controller1.Screen.clearScreen();
     drawLogo();
+    wait(20, msec);
     Competition.drivercontrol(user);
   } else if (autonchoice == 1){
     autonomous_start();

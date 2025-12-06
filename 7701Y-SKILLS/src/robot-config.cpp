@@ -20,10 +20,9 @@ bool sol2Toggle = true;
 //These booleans are used so only one button has to be pressed to do an action
 //This is because button presses are detected many times in a second, so it would just go on and off without bound.
 
-float Kp = 1.7;   // Proportional gain only for LB PID
-float Kpp = 0.4;   // Proportional gain for PID
+float Kpp = 0.37;   // Proportional gain for PID
 float Ki = 0.0;   // Integral gain for PID
-float Kd = 0.45;   // Derivative gain for PID
+float Kd = 0.0;   // Derivative gain for PID
 float driveangle;
 
 /*------------------------------------------------*/
@@ -33,6 +32,17 @@ float driveangle;
 /*                                                */
 /*---------------------\/-------------------------*/
 
+int BrainScreenUpdate(){
+  while(true){
+    int rotation = DrivetrainInertial.rotation();
+    Brain.Screen.print(("Angle: %d",(rotation)));
+    Controller1.Screen.print("ANGLE: %d",(rotation));
+    wait(30, msec);
+    Brain.Screen.clearScreen();
+    Controller1.Screen.clearScreen();
+  }
+  return 0;
+}
 
 
 /*------------------------------------------------*/
@@ -256,7 +266,7 @@ void turn_to_angle(float targetAngle) {
         derivative = error - previousError;
         float D = Kd * derivative;
         
-        float KL = 1.5;
+        float KL = 0.8;
 
         // PID output
         motorPower = P + I + D;
@@ -395,6 +405,9 @@ void run( void ) {
   RightDriveSmart.setVelocity(30, percentUnits::pct);
   LeftDriveSmart.setVelocity(30, percentUnits::pct);
   wait(500,msec);
+  Brain.Screen.clearScreen();
+  Brain.Screen.setFillColor(black);
+  Brain.Screen.clearScreen();
   // Create buttons for auto or driver control selection
   Brain.Screen.setFillColor(yellow);
   Brain.Screen.drawRectangle(0,0,230,272);

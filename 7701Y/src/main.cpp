@@ -45,7 +45,7 @@ motor intakeMotor = motor(PORT5, ratio6_1, false);
 motor intakeMotor2 = motor(PORT4, ratio18_1, false);
 motor_group allIntake = motor_group(intakeMotor, intakeMotor2);
 digital_out sol1 = digital_out(Brain.ThreeWirePort.H);
-digital_out sols2 = digital_out(Brain.ThreeWirePort.G);
+digital_out sol2 = digital_out(Brain.ThreeWirePort.G);
 
 
 rotation XTracking = rotation(PORT18, true);
@@ -65,21 +65,103 @@ rotation YTracking = rotation(PORT19, false);
 /*---------------------------------------------------------------------------*/ 
 
 void pre_auton(void) {
-  Brain.Screen.print("Device initialization...");
-  Brain.Screen.setCursor(2, 1);
+  thread BrainLoading(loadingScreen);
   // calibrate the drivetrain Inertial
   wait(200, msec);
   DrivetrainInertial.calibrate();
-  Brain.Screen.print("Calibrating Inertial for Drivetrain");
   // wait for the Inertial calibration process to finish
   while (DrivetrainInertial.isCalibrating()) {
     wait(25, msec);
   }
   wait(250, msec);
   // reset the screen now that the calibration is complete
+  BrainLoading.interrupt();
   Brain.Screen.clearScreen();
   Brain.Screen.setCursor(1,1);
   running = false;
+}
+
+void pid_test(){
+  turn_to_angle(135, true);
+  Brain.Screen.clearScreen();
+}
+void autonomous_skills(void){
+  smoothDrive(85, 850);
+  Drivetrain.stop();
+  wait(30, msec);
+  turn_to_angle(90, false);
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  smoothDrive(55, 1700);     
+  Drivetrain.stop(); 
+  wait(25, msec);    
+  turn_to_angle(140, false);
+  smoothDrive(90, 1250);
+  Drivetrain.stop();
+  turn_to_angle(180, false);
+  smoothDrive(-75,1050);
+  allIntake.spin(reverse, 100, percent);
+  wait(1500, msec);
+  Drivetrain.stop();
+  allIntake.stop();
+  sol1.set(true);
+  smoothDrive(40, 300);
+  Drivetrain.stop();
+  turn_to_angle(180, false);
+  smoothDrive(93, 1200);
+  Drivetrain.stop();
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  jitter(3500);
+  smoothDrive(-55, 300);
+  Drivetrain.stop();
+  turn_to_angle(180, false);
+  smoothDrive(-100, 1250);
+  allIntake.spin(reverse, 100, percent);
+  wait(1100, msec);
+  Drivetrain.stop();
+  allIntake.stop();
+  allIntake.spin(forward, 30, percent);
+  wait(300, msec);
+  allIntake.stop();
+  smoothDrive(75, 700);
+  Drivetrain.stop();
+  sol1.set(false);
+  wait(25, msec);
+  turn_to_angle(315, false);
+  smoothDrive(90, 950);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(270, false);
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  smoothDrive(90, 2100);
+  Drivetrain.stop();
+  /*wait(25, msec);
+  turn_to_angle(-135, false);
+  smoothDrive(90, 1400);
+  Drivetrain.stop();
+  wait(25, msec);
+  turn_to_angle(-180, false);
+  smoothDrive(-75,1050);
+  allIntake.spin(reverse, 100, percent);
+  wait(1500, msec);
+  Drivetrain.stop();
+  allIntake.stop();
+  sol1.set(true);
+  smoothDrive(40, 300);
+  Drivetrain.stop();
+  turn_to_angle(-180, false);
+  smoothDrive(85, 1000);
+  Drivetrain.stop();
+  intakeMotor.spin(reverse, 100, percent);
+  intakeMotor2.spin(forward, 12, percent);
+  jitter(3000);
+  smoothDrive(-100, 1250);
+  allIntake.spin(reverse, 100, percent);
+  wait(1500, msec);
+  Drivetrain.stop();
+  allIntake.stop();*/
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,11 +184,11 @@ void autonomous_left(void){
   Drivetrain.stop();
   wait(200, msec);
   Drivetrain.stop();
-  turn_to_angle(-116);
+  turn_to_angle(-124, false);
   allIntake.stop();
-  smoothDrive(95, 1400);
+  smoothDrive(95, 1260);
   wait(100, msec);
-  turn_to_angle(-162);
+  turn_to_angle(-165, false);
   smoothDrive(-75, 1050);
   allIntake.spin(reverse, 100, percent);
   wait(1400 ,msec);
@@ -114,8 +196,8 @@ void autonomous_left(void){
   sol1.set(true);
   allIntake.stop();
   smoothDrive(50, 400);
-  turn_to_angle(-165);
-  smoothDrive(85, 1475);
+  turn_to_angle(-165, false);
+  smoothDrive(85, 1500);
   intakeMotor.spin(reverse, 100, percent);
   intakeMotor2.spin(forward, 5, percent);
   jitter(1800);
@@ -123,7 +205,8 @@ void autonomous_left(void){
   Drivetrain.setDriveVelocity(90, percent);
   Drivetrain.drive(reverse);
   wait(1000, msec);
-  allIntake.spin(reverse, 100, percent);
+  allIntake.spin(reverse, 90, percent);
+  Drivetrain.stop();
 }
 
 // Code for right side autonomous (basic)
@@ -136,11 +219,11 @@ void autonomous_right(void) {
   Drivetrain.stop();
   wait(200, msec);
   Drivetrain.stop();
-  turn_to_angle(116);
+  turn_to_angle(124, false);
   allIntake.stop();
-  smoothDrive(95, 1400);
+  smoothDrive(95, 1260);
   wait(100, msec);
-  turn_to_angle(162);
+  turn_to_angle(165, false);
   smoothDrive(-75, 1050);
   allIntake.spin(reverse, 100, percent);
   wait(1400 ,msec);
@@ -148,56 +231,88 @@ void autonomous_right(void) {
   sol1.set(true);
   allIntake.stop();
   smoothDrive(50, 400);
-  turn_to_angle(165);
-  smoothDrive(85, 1475);
+  turn_to_angle(165, false);
+  smoothDrive(85, 1500);
   intakeMotor.spin(reverse, 100, percent);
   intakeMotor2.spin(forward, 5, percent);
   jitter(1800);
   Drivetrain.stop();
+  Drivetrain.setDriveVelocity(30, percent);
+  Drivetrain.drive(reverse);
+  wait(450, msec);
+  Drivetrain.stop();
+  turn_to_angle(165, false);
   Drivetrain.setDriveVelocity(90, percent);
   Drivetrain.drive(reverse);
   wait(1000, msec);
-  allIntake.spin(reverse, 100, percent);
+  allIntake.spin(reverse, 90, percent);
+  Drivetrain.stop();
 }
 
 void autonomous_start( void ){
   Controller1.Screen.clearScreen();
-  Brain.Screen.setFillColor(green);
-  Brain.Screen.drawRectangle(0,0,230,272);
-  Brain.Screen.printAt(10,45,"LEFT");
+  Brain.Screen.drawImageFromFile("LeftAuto.png", 0, 8);
 
-  Brain.Screen.setFillColor(red);
-  Brain.Screen.drawRectangle(250,0,230,272);
-  Brain.Screen.printAt(260,45, "RIGHT");
+  Brain.Screen.drawImageFromFile("PIDTest.png", 0, 130);
+
+  Brain.Screen.drawImageFromFile("RightAuto.png", 250, 8);
   Controller1.Screen.setCursor(0,0);
   Controller1.Screen.print("                       ");
   Controller1.Screen.newLine();
   Controller1.Screen.print("Y: LEFT       A: RIGHT");
   Controller1.Screen.newLine();
-  Controller1.Screen.print("                       ");
+  Controller1.Screen.print("      B: PID TEST      ");
 
 
   while(true){
     if ((Brain.Screen.pressing() == true)){
       int x = Brain.Screen.xPosition();
+      int y = Brain.Screen.yPosition();
       
-      if ((x<=230)){
+      if ((x<=230)&&(y<=130)){
         practice = true;
+
+        Brain.Screen.clearScreen();
+        while (Brain.Screen.pressing())
+        {
+          Brain.Screen.drawImageFromFile("LeftAutoPressed.png", 5, 18);
+        }
+
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
         drawLogo();
         wait(1000, msec);
         autonomous_left();
-      }else if((x>=250)){
+      }else if((x>=250)&&(y<=130)){
         practice = true;
+
+        Brain.Screen.clearScreen();
+        while (Brain.Screen.pressing())
+        {
+          Brain.Screen.drawImageFromFile("RightAutoPressed.png", 260, 18);
+        }
+
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
         drawLogo();
         wait(1000, msec);
         autonomous_right();
+      }else if((y>130)){
+        practice = true;
+
+        Brain.Screen.clearScreen();
+        while (Brain.Screen.pressing())
+        {
+          Brain.Screen.drawImageFromFile("PIDTestPressed.png", 5, 140);
+        }
+
+        Brain.Screen.clearScreen();
+        Controller1.Screen.clearScreen();
+        wait(2000, msec);
+        autonomous_skills();
       }
     }
-    else if ((Controller1.ButtonY.pressing()==true)||(Controller1.ButtonA.pressing()==true)){      
+    else if ((Controller1.ButtonY.pressing()==true)||(Controller1.ButtonA.pressing()==true)||(Controller1.ButtonB.pressing()==true)){      
       if ((Controller1.ButtonY.pressing()==true)){
         practice = true;
         Brain.Screen.clearScreen();
@@ -212,11 +327,17 @@ void autonomous_start( void ){
         drawLogo();
         wait(1000, msec);
         autonomous_right();
+      }else if((Controller1.ButtonB.pressing())){
+        practice = true;
+        Brain.Screen.clearScreen();
+        Controller1.Screen.clearScreen();
+        thread BrainScreenUpdate(BrainScreenUpdate);
+        wait(1000, msec);
+        autonomous_skills();
       }
     }
   }
 }
-
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /*                              User Control Task                            */
@@ -233,6 +354,7 @@ void autonomous_start( void ){
 void user(void) {
   //User control code here, inside the loop
     thread rc_auto_loop_controller(rc_auto_loop_function_Controller1);
+    thread controller(controllerUpdating);
     wait(20,msec);
 }
 
@@ -244,7 +366,7 @@ int main() {
   // Run the pre-autonomous function.
   pre_auton();
 
-  /* task odomTask(odomTrack);   */
+  // thread odomTask(odomTrack); 
 
   run();
   

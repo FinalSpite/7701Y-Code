@@ -16,7 +16,7 @@ extern motor_group RightDriveSmart;
 extern motor intakeMotor;
 extern motor intakeMotor2;
 extern digital_out sol1;
-extern digital_out sols2;
+extern digital_out sol2;
 extern motor_group allIntake;
 extern rotation XTracking;
 extern rotation YTracking;

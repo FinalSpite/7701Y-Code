@@ -7,10 +7,12 @@ using namespace vex;
  */
 void vexcodeInit( void );
 void run( void );
-void turn_to_angle( float );
+void turn_to_angle( float , bool);
 int rc_auto_loop_function_Controller1();
 int odomTrack();
 void moveTo( double, double );
 void drawLogo( void );
 void smoothDrive( int , int );
 void jitter(int);
+int loadingScreen( );
+int controllerUpdating();

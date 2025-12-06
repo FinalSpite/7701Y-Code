@@ -9,6 +9,7 @@ void vexcodeInit( void );
 void run( void );
 void turn_to_angle( float );
 int rc_auto_loop_function_Controller1();
+int BrainScreenUpdate();
 int odomTrack();
 void moveTo( double, double );
 void drawLogo( void );
