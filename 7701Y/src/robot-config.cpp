@@ -12,10 +12,12 @@ bool RemoteControlCodeEnabled = true;
 bool DrivetrainLNeedsToBeStopped_Controller1 = true;
 bool DrivetrainRNeedsToBeStopped_Controller1 = true;
 bool intakesNeedToBeStopped = false;
-bool sol1ToggleLast =false;
-bool sol1Toggle = true;
-bool sol2ToggleLast =false;
-bool sol2Toggle = false;
+bool matchLoadToggleLast =false;
+bool matchLoadToggle = true;
+bool middleGoalToggleLast =false;
+bool middleGoalToggle = false;
+bool descoreToggleLast =false;
+bool descoreToggle = false;
 
 //These booleans are used so only one button has to be pressed to do an action
 //This is because button presses are detected many times in a second, so it would just go on and off without bound.
@@ -107,40 +109,60 @@ int rc_auto_loop_function_Controller1() {
       
 
       if ((Controller1.ButtonB.pressing() == true)){
-        if (sol1ToggleLast == false){
-          if (sol1Toggle == true){
-            sol1.set(true); 
-            sol1Toggle = false;
+        if ( matchLoadToggleLast == false){
+          if (matchLoadToggle == true){
+            matchLoad.set(true); 
+            matchLoadToggle = false;
           }
-          else if (sol1Toggle == false)
+          else if (matchLoadToggle == false)
           {
-            sol1.set(false);
-            sol1Toggle = true;
+            matchLoad.set(false);
+            matchLoadToggle = true;
           } 
-          sol1ToggleLast = true;
+           matchLoadToggleLast = true;
         }
       }
       if (Controller1.ButtonB.pressing() == false){
-        sol1ToggleLast = false;
+        matchLoadToggleLast = false;
       }
 
       if ((Controller1.ButtonY.pressing() == true)){
-        if (sol2ToggleLast == false){
-          if (sol2Toggle == false){
-            sol2.set(true); 
-            sol2Toggle = true;
+        if (middleGoalToggleLast == false){
+          if (middleGoalToggle == false){
+            middleGoal.set(true); 
+            middleGoalToggle = true;
           }
-          else if (sol2Toggle == true)
+          else if (middleGoalToggle == true)
           {
-            sol2.set(false);
-            sol2Toggle = false;
+            middleGoal.set(false);
+            middleGoalToggle = false;
           } 
-          sol2ToggleLast = true;
+          middleGoalToggleLast = true;
         }
       }
       if (Controller1.ButtonY.pressing() == false){
-        sol2ToggleLast = false;
+        middleGoalToggleLast = false;
       }
+
+
+      if ((Controller1.ButtonA.pressing() == true)){
+        if (descoreToggleLast == false){
+          if (descoreToggle == true){
+            descore.set(true); 
+            descoreToggle = false;
+          }
+          else if (descoreToggle == false)
+          {
+            descore.set(false);
+            descoreToggle = true;
+          } 
+          descoreToggleLast = true;
+        }
+      }
+      if (Controller1.ButtonA.pressing() == false){
+        descoreToggleLast = false;
+      }
+
 
 
       if ((Controller1.ButtonR1.pressing() == true)&&(intakesNeedToBeStopped == false)){
@@ -269,7 +291,7 @@ void turn_to_angle(float targetAngle, bool test) {
         derivative = error - previousError;
         float D = Kd * derivative;
         
-        float KL = 0.8;
+        float KL = 1;
 
         // PID output
         motorPower = P + I + D;
@@ -315,8 +337,6 @@ void turn_to_angle(float targetAngle, bool test) {
       }else{
         Brain.Screen.print("SD card written");
       }
-
-      wait(100, seconds);
     }
 }
 /*------------------------------------------------*/
@@ -331,9 +351,9 @@ double xPos = 0.0;
 double yPos = 0.0;
 double headingRad = 0.0;
 
-const double wheelRadius = 1.375; // inches (2.75" diameter / 2)
-const double sideWheelOffset = 5.0; // distance from robot center to the sideways wheel
-const double forwardWheelOffset = 5.0; // distance from center to forward wheel
+const double wheelRadius = 1; // inches (2" diameter / 2)
+const double sideWheelOffset = 1.5; // distance from robot center to the sideways wheel
+const double forwardWheelOffset = 3.0; // distance from center to forward wheel
 const double degToRad = 3.14159265 / 180.0;
 
 double degToInches(double deg) {
@@ -381,26 +401,18 @@ int odomTrack() {
 }
 
 // Move to a specific coordinate
-void moveTo(double targetX, double targetY, double speed = 40) {
-  const double tolerance = 1.0; // inches
-  while (fabs(targetX - xPos) > tolerance || fabs(targetY - yPos) > tolerance) {
-    double deltaX = targetX - xPos;
-    double deltaY = targetY - yPos;
-    double targetAngle = atan2(deltaY, deltaX);
-    double distance = sqrt((deltaX * deltaX) + (deltaY * deltaY));
+void moveFor(double targetD) {
+  double speed = 20;
+  double slowDownRadius= 10.0;
+  double Pos =0.0;
+  const double tolerance = 0.5; // inches
+  YTracking.resetPosition();
+  while (fabs(targetD-Pos) > tolerance) {
+    Pos = degToInches(YTracking.position(degrees));
 
-    double errorAngle = targetAngle - (DrivetrainInertial.rotation() * 3.14159265 / 180.0);
-    double turnPower = errorAngle * 180.0 / 3.14159265 * 0.5;
-    double forwardPower = speed;
-
-    double leftPower = forwardPower - turnPower;
-    double rightPower = forwardPower + turnPower;
-
-    leftPower = clamp(leftPower, -100.0, 100.0);
-    rightPower = clamp(rightPower, -100.0, 100.0);
-
-    LeftDriveSmart.spin(fwd, leftPower, pct);
-    RightDriveSmart.spin(fwd, rightPower, pct);
+    double delta = targetD - Pos;
+    LeftDriveSmart.spin(fwd, speed, pct);
+    RightDriveSmart.spin(fwd, speed, pct);
 
     wait(20, msec);
   }
@@ -509,11 +521,11 @@ void run( void ) {
   wait(150, msec);
 }
 void jitter(int dmsec){
-  int steps = dmsec / 300;
+  int steps = dmsec / 400;
   for(int i =0; i<=steps ;i++){
-    Drivetrain.setDriveVelocity(75, percent);
+    Drivetrain.setDriveVelocity(55, percent);
     Drivetrain.drive(forward);
-    wait(150, msec);
+    wait(250, msec);
     Drivetrain.drive(reverse);
     wait(150, msec);
     Drivetrain.stop();
@@ -550,18 +562,23 @@ int controllerUpdating(){
   std::string back;
   std::string matchload;
   while(1){
-    if(sol2Toggle == false){
+    if(descoreToggle == false){
       back = "false";
     }else{
       back = "true";
     }
-    if(sol1Toggle == true){
+    if(matchLoadToggle == true){
       matchload = "false";
     }else{
       matchload = "true";
     }
+    if(middleGoalToggle == true){
+      Controller1.rumble("..- ..- ..- ..- ..- ");
+    }else{
+      Controller1.rumble(" ");
+    }
     Controller1.Screen.setCursor(1,1);
-    Controller1.Screen.print("MIDDLE GOAL?: %s", back.c_str());
+    Controller1.Screen.print("HOOK?: %s", back.c_str());
     Controller1.Screen.newLine();
     Controller1.Screen.print("MATCHLOAD?: %s", matchload.c_str());
     wait(50, msec);

@@ -16,6 +16,8 @@ bool sol1ToggleLast =false;
 bool sol1Toggle = true;
 bool sol2ToggleLast =false;
 bool sol2Toggle = true;
+bool descoreToggleLast =false;
+bool descoreToggle = true;
 
 //These booleans are used so only one button has to be pressed to do an action
 //This is because button presses are detected many times in a second, so it would just go on and off without bound.
@@ -154,6 +156,24 @@ int rc_auto_loop_function_Controller1() {
       }
       if (Controller1.ButtonY.pressing() == false){
         sol2ToggleLast = false;
+      }
+
+      if ((Controller1.ButtonB.pressing() == true)){
+        if (descoreToggleLast == false){
+          if (descoreToggle == true){
+            descore.set(true); 
+            descoreToggle = false;
+          }
+          else if (sol2Toggle == false)
+          {
+            descore.set(false);
+            descoreToggle = true;
+          } 
+          descoreToggleLast = true;
+        }
+      }
+      if (Controller1.ButtonB.pressing() == false){
+        descoreToggleLast = false;
       }
 
 

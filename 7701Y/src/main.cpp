@@ -31,25 +31,26 @@ int autonchoice = 0;
 // define your global instances of motors and other devices here
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor leftMotorA = motor(PORT11, ratio6_1, false);
-motor leftMotorB = motor(PORT12, ratio6_1, true);
-motor leftMotorC = motor(PORT13, ratio6_1, false);
+motor leftMotorA = motor(PORT15, ratio6_1, true);
+motor leftMotorB = motor(PORT14, ratio6_1, true);
+motor leftMotorC = motor(PORT13, ratio6_1, true);
 motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB, leftMotorC);
-motor rightMotorA = motor(PORT14, ratio6_1, true);
-motor rightMotorB = motor(PORT15, ratio6_1, false);
-motor rightMotorC = motor(PORT16, ratio6_1, true);
+motor rightMotorA = motor(PORT7, ratio6_1, false);
+motor rightMotorB = motor(PORT5, ratio6_1, false);
+motor rightMotorC = motor(PORT6, ratio6_1, false);
 motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC);
-inertial DrivetrainInertial = inertial(PORT17);
+inertial DrivetrainInertial = inertial(PORT2);
 smartdrive Drivetrain = smartdrive(LeftDriveSmart, RightDriveSmart, DrivetrainInertial, 259.34, 289.56, 254, mm, 1.3333333333);
-motor intakeMotor = motor(PORT5, ratio6_1, false);
-motor intakeMotor2 = motor(PORT4, ratio18_1, false);
+motor intakeMotor = motor(PORT10, ratio6_1, false);
+motor intakeMotor2 = motor(PORT8, ratio18_1, true);
 motor_group allIntake = motor_group(intakeMotor, intakeMotor2);
-digital_out sol1 = digital_out(Brain.ThreeWirePort.H);
-digital_out sol2 = digital_out(Brain.ThreeWirePort.G);
+digital_out matchLoad = digital_out(Brain.ThreeWirePort.C);
+digital_out middleGoal = digital_out(Brain.ThreeWirePort.B);
+digital_out descore = digital_out(Brain.ThreeWirePort.H);
+distance distanceSensor = distance(PORT4);
 
-
-rotation XTracking = rotation(PORT18, true);
-rotation YTracking = rotation(PORT19, false);
+rotation XTracking = rotation(PORT3, false);
+rotation YTracking = rotation(PORT12, false);
 
 
 
@@ -68,6 +69,8 @@ void pre_auton(void) {
   thread BrainLoading(loadingScreen);
   // calibrate the drivetrain Inertial
   wait(200, msec);
+  XTracking.resetPosition();
+  YTracking.resetPosition();
   DrivetrainInertial.calibrate();
   // wait for the Inertial calibration process to finish
   while (DrivetrainInertial.isCalibrating()) {
@@ -81,10 +84,6 @@ void pre_auton(void) {
   running = false;
 }
 
-void pid_test(){
-  turn_to_angle(135, true);
-  Brain.Screen.clearScreen();
-}
 void autonomous_skills(void){
   smoothDrive(85, 850);
   Drivetrain.stop();
@@ -104,7 +103,7 @@ void autonomous_skills(void){
   wait(1500, msec);
   Drivetrain.stop();
   allIntake.stop();
-  sol1.set(true);
+  matchLoad.set(true);
   smoothDrive(40, 300);
   Drivetrain.stop();
   turn_to_angle(180, false);
@@ -126,7 +125,7 @@ void autonomous_skills(void){
   allIntake.stop();
   smoothDrive(75, 700);
   Drivetrain.stop();
-  sol1.set(false);
+  matchLoad.set(false);
   wait(25, msec);
   turn_to_angle(315, false);
   smoothDrive(90, 950);
@@ -193,7 +192,7 @@ void autonomous_left(void){
   allIntake.spin(reverse, 100, percent);
   wait(1400 ,msec);
   Drivetrain.stop();
-  sol1.set(true);
+  matchLoad.set(true);
   allIntake.stop();
   smoothDrive(50, 400);
   turn_to_angle(-165, false);
@@ -211,42 +210,40 @@ void autonomous_left(void){
 
 // Code for right side autonomous (basic)
 void autonomous_right(void) {
+  moveFor(10);
+  /*turn_to_angle(15, false);
   intakeMotor.spin(reverse, 100, percent);
   intakeMotor2.spin(forward, 12, percent);
   smoothDrive(80, 1200);
   Drivetrain.stop();
-  wait(20, msec);
-  Drivetrain.stop();
-  wait(200, msec);
-  Drivetrain.stop();
-  turn_to_angle(124, false);
+  wait(220, msec);
+  turn_to_angle(135, false);
   allIntake.stop();
   smoothDrive(95, 1260);
   wait(100, msec);
-  turn_to_angle(165, false);
+  turn_to_angle(180, false);
   smoothDrive(-75, 1050);
   allIntake.spin(reverse, 100, percent);
   wait(1400 ,msec);
   Drivetrain.stop();
-  sol1.set(true);
+  matchLoad.set(true);
   allIntake.stop();
-  smoothDrive(50, 400);
-  turn_to_angle(165, false);
-  smoothDrive(85, 1500);
+  smoothDrive(85, 500);
+  turn_to_angle(182, false);
+  smoothDrive(90, 1000);
   intakeMotor.spin(reverse, 100, percent);
   intakeMotor2.spin(forward, 5, percent);
-  jitter(1800);
+  jitter(1900);
   Drivetrain.stop();
-  Drivetrain.setDriveVelocity(30, percent);
+  Drivetrain.setDriveVelocity(20, percent);
   Drivetrain.drive(reverse);
   wait(450, msec);
   Drivetrain.stop();
-  turn_to_angle(165, false);
-  Drivetrain.setDriveVelocity(90, percent);
+  turn_to_angle(175, false);
+  Drivetrain.setDriveVelocity(70, percent);
   Drivetrain.drive(reverse);
-  wait(1000, msec);
-  allIntake.spin(reverse, 90, percent);
-  Drivetrain.stop();
+  wait(1100, msec);
+  allIntake.spin(reverse, 90, percent);*/
 }
 
 void autonomous_start( void ){
@@ -256,12 +253,13 @@ void autonomous_start( void ){
   Brain.Screen.drawImageFromFile("PIDTest.png", 0, 130);
 
   Brain.Screen.drawImageFromFile("RightAuto.png", 250, 8);
+  
   Controller1.Screen.setCursor(0,0);
   Controller1.Screen.print("                       ");
   Controller1.Screen.newLine();
   Controller1.Screen.print("Y: LEFT       A: RIGHT");
   Controller1.Screen.newLine();
-  Controller1.Screen.print("      B: PID TEST      ");
+  Controller1.Screen.print("     B: AUTO SKILLS     ");
 
 
   while(true){
@@ -331,7 +329,6 @@ void autonomous_start( void ){
         practice = true;
         Brain.Screen.clearScreen();
         Controller1.Screen.clearScreen();
-        thread BrainScreenUpdate(BrainScreenUpdate);
         wait(1000, msec);
         autonomous_skills();
       }
@@ -366,7 +363,7 @@ int main() {
   // Run the pre-autonomous function.
   pre_auton();
 
-  // thread odomTask(odomTrack); 
+  thread odomTask(odomTrack); 
 
   run();
   

@@ -31,26 +31,26 @@ int autonchoice = 0;
 // define your global instances of motors and other devices here
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor leftMotorA = motor(PORT11, ratio6_1, false);
-motor leftMotorB = motor(PORT12, ratio6_1, true);
-motor leftMotorC = motor(PORT13, ratio6_1, false);
+motor leftMotorA = motor(PORT15, ratio6_1, true);
+motor leftMotorB = motor(PORT14, ratio6_1, true);
+motor leftMotorC = motor(PORT13, ratio6_1, true);
 motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB, leftMotorC);
-motor rightMotorA = motor(PORT14, ratio6_1, true);
-motor rightMotorB = motor(PORT15, ratio6_1, false);
-motor rightMotorC = motor(PORT16, ratio6_1, true);
+motor rightMotorA = motor(PORT7, ratio6_1, false);
+motor rightMotorB = motor(PORT5, ratio6_1, false);
+motor rightMotorC = motor(PORT6, ratio6_1, false);
 motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC);
 inertial DrivetrainInertial = inertial(PORT17);
 smartdrive Drivetrain = smartdrive(LeftDriveSmart, RightDriveSmart, DrivetrainInertial, 259.34, 289.56, 254, mm, 1.3333333333);
-motor intakeMotor = motor(PORT5, ratio6_1, false);
-motor intakeMotor2 = motor(PORT4, ratio18_1, false);
+motor intakeMotor = motor(PORT10, ratio6_1, false);
+motor intakeMotor2 = motor(PORT8, ratio18_1, false);
 motor_group allIntake = motor_group(intakeMotor, intakeMotor2);
 digital_out sol1 = digital_out(Brain.ThreeWirePort.H);
-digital_out sols2 = digital_out(Brain.ThreeWirePort.G);
+digital_out sol2 = digital_out(Brain.ThreeWirePort.G);
+digital_out descore = digital_out(Brain.ThreeWirePort.A);
 
 
-rotation XTracking = rotation(PORT18, true);
+rotation XTracking = rotation(PORT18, false);
 rotation YTracking = rotation(PORT19, false);
-
 
 
 

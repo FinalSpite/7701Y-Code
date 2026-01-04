@@ -11,12 +11,14 @@
 extern brain Brain;
 extern controller Controller1;
 extern smartdrive Drivetrain;
+extern inertial DrivetrainInertial;
 extern motor_group LeftDriveSmart;
 extern motor_group RightDriveSmart;
 extern motor intakeMotor;
 extern motor intakeMotor2;
-extern digital_out sol1;
-extern digital_out sol2;
+extern digital_out matchLoad;
+extern digital_out middleGoal;
+extern digital_out descore;
 extern motor_group allIntake;
 extern rotation XTracking;
 extern rotation YTracking;
