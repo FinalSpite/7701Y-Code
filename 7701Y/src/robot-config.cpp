@@ -22,9 +22,12 @@ bool descoreToggle = false;
 //These booleans are used so only one button has to be pressed to do an action
 //This is because button presses are detected many times in a second, so it would just go on and off without bound.
 
-float Kpp = 0.355;   // Proportional gain for PID
+float Kpp = 0.4;   // Proportional gain for both PIDs
+float Kp = 0.4;
 float Ki = 0.0;   // Integral gain for PID
+float Kii = 0.00; //Integral gain for driving PID
 float Kd = 0.0;   // Derivative gain for PID
+float Kdd = 0.16; // Derivative gain for drving PID
 float driveangle;
 
 /*------------------------------------------------*/
@@ -39,13 +42,32 @@ float driveangle;
 /*                    ||||                        */
 /*                                                */
 /*---------------------\/-------------------------*/
+
+double angleError(double target, double current) {
+    double error = target - current;
+    if (error > 180) error -= 360;
+    if (error < -180) error += 360;
+    return error;
+}
+
 // define a task that will handle monitoring inputs from Controller1
 int rc_auto_loop_function_Controller1() {
   // process the controller input every 20 milliseconds
   // update the motors based on the input values
-  Drivetrain.setDriveVelocity(100, percent);
+  double iterationsofPID = 0;
+  double targetHeading = 0;
+  double error = 0;
+  double intergral = 0;
+  double derivative = 0;
+  double prevError;
+  double correction = 0;
+
   while(true) {
     if(RemoteControlCodeEnabled) {
+
+      double currentHeading = DrivetrainInertial.heading();
+
+
       // stop the motors if the brain is calibrating
       if (DrivetrainInertial.isCalibrating()) {
         LeftDriveSmart.stop();
@@ -56,12 +78,54 @@ int rc_auto_loop_function_Controller1() {
       }
       Drivetrain.setStopping(coast);
       // calculate the drivetrain motor velocities from the controller joystick axies
-      // left = Axis1 - Axis3
-      // right = Axis1 + Axis3
+      // left = Axis3 + Axis1
+      // right = Axis3 - Axis1
       int drivetrainLeftSideSpeed = Controller1.Axis1.position() + Controller1.Axis3.position();
       int drivetrainRightSideSpeed = Controller1.Axis3.position() - Controller1.Axis1.position();
       
-      int deadzone = 2;
+      int GlobalSpeedValue = 115;
+
+
+      //IF THE ROBOT IS TURING THIS CHANGES THE ACCELERATION GRAPH SO TURNS ARE SMOOTHER
+      if(abs(drivetrainLeftSideSpeed-drivetrainRightSideSpeed)>=30){
+        GlobalSpeedValue = 180;
+      }else if(abs(Controller1.Axis3.position())<=30){
+        GlobalSpeedValue = 170;
+      }else{
+        GlobalSpeedValue = 115;
+      }
+
+      double deadzone = 0.18;
+
+
+      
+      //This is a PID that adjusts the speed of the sides of the robot by the difference in the headindg based
+      // previous heading of the robot
+      if(abs(Controller1.Axis1.position())<=7){
+        if(iterationsofPID == 0){
+          targetHeading = DrivetrainInertial.heading();
+        }
+        error = angleError(targetHeading, currentHeading);
+
+        intergral += error;
+        derivative = error-prevError;
+
+        correction = (Kpp * error) + (Kii * intergral) + (Kdd * derivative);
+
+
+        prevError = error;
+
+
+      }else{
+        iterationsofPID = 0;
+        intergral =0;
+        derivative =0;
+        error =0;
+        prevError =0;
+        correction = 0;
+      }
+
+
 
       // check if the value is inside of the deadband range
       if (drivetrainLeftSideSpeed < deadzone && drivetrainLeftSideSpeed > -deadzone) {
@@ -91,7 +155,8 @@ int rc_auto_loop_function_Controller1() {
       }
       // only tell the left drive motor to spin if the values are not in the deadband range
       if (DrivetrainLNeedsToBeStopped_Controller1) {
-        double leftVelocity = (drivetrainLeftSideSpeed*fabs(drivetrainLeftSideSpeed))/115;
+        double leftVelocity = (drivetrainLeftSideSpeed*abs(drivetrainLeftSideSpeed))/(GlobalSpeedValue);
+        leftVelocity -=correction;
 
         LeftDriveSmart.setVelocity(leftVelocity, percent);
         LeftDriveSmart.spin(forward);
@@ -99,14 +164,15 @@ int rc_auto_loop_function_Controller1() {
 
       // only tell the right drive motor to spin if the values are not in the deadband range
       if (DrivetrainRNeedsToBeStopped_Controller1) {
-        double rightVelocity = (drivetrainRightSideSpeed*fabs(drivetrainRightSideSpeed))/115;
+        double rightVelocity = (drivetrainRightSideSpeed*abs(drivetrainRightSideSpeed))/(GlobalSpeedValue);
+        rightVelocity +=correction;
 
         RightDriveSmart.setVelocity(rightVelocity, percent);
         RightDriveSmart.spin(forward);
       }
 
       // This section is for button holds and toggles for other actions on the robot (solenoids, intake, etc)
-      
+
 
       if ((Controller1.ButtonB.pressing() == true)){
         if ( matchLoadToggleLast == false){
@@ -126,7 +192,7 @@ int rc_auto_loop_function_Controller1() {
         matchLoadToggleLast = false;
       }
 
-      if ((Controller1.ButtonY.pressing() == true)){
+      if ((Controller1.ButtonA.pressing() == true)){
         if (middleGoalToggleLast == false){
           if (middleGoalToggle == false){
             middleGoal.set(true); 
@@ -140,12 +206,12 @@ int rc_auto_loop_function_Controller1() {
           middleGoalToggleLast = true;
         }
       }
-      if (Controller1.ButtonY.pressing() == false){
+      if (Controller1.ButtonA.pressing() == false){
         middleGoalToggleLast = false;
       }
 
 
-      if ((Controller1.ButtonA.pressing() == true)){
+      if ((Controller1.ButtonY.pressing() == true)){
         if (descoreToggleLast == false){
           if (descoreToggle == true){
             descore.set(true); 
@@ -159,7 +225,7 @@ int rc_auto_loop_function_Controller1() {
           descoreToggleLast = true;
         }
       }
-      if (Controller1.ButtonA.pressing() == false){
+      if (Controller1.ButtonY.pressing() == false){
         descoreToggleLast = false;
       }
 
@@ -236,7 +302,6 @@ int rc_auto_loop_function_Controller1() {
 /*                    ||||                        */
 /*                                                */
 /*---------------------\/-------------------------*/
-
 void smoothDrive(int targetSpeed, int duration_ms) {
   double k = 0.015;          // reduced steepness
   int steps = duration_ms / 30;
@@ -272,23 +337,23 @@ void turn_to_angle(float targetAngle, bool test) {
           wait(5, msec);
         }
       }
-      Brain.Timer.clear();
     }
-
-
+    Brain.Timer.clear();
     while (true) {
         // Calculate the current error
         error = targetAngle - DrivetrainInertial.rotation();
         driveangle = DrivetrainInertial.rotation();
         // Proportional term
-        float P = Kpp * error;
+        float P = Kp * error;
         
         // Integral term
-        integral += error;
+        integral += error * Brain.Timer.value();
+
+
         float I = Ki * integral;
         
         // Derivative term
-        derivative = error - previousError;
+        derivative = (error - previousError)/Brain.Timer.value();
         float D = Kd * derivative;
         
         float KL = 1;
@@ -351,13 +416,11 @@ double xPos = 0.0;
 double yPos = 0.0;
 double headingRad = 0.0;
 
-const double wheelRadius = 1; // inches (2" diameter / 2)
-const double sideWheelOffset = 1.5; // distance from robot center to the sideways wheel
-const double forwardWheelOffset = 3.0; // distance from center to forward wheel
+const double wheelRadius = 1.1; // inches (2" diameter / 2)
 const double degToRad = 3.14159265 / 180.0;
 
 double degToInches(double deg) {
-  return (deg * 3.14159265 / 180.0) * wheelRadius;
+  return ((deg * 3.14159265)/ 180.0) * wheelRadius;
 }
 
 template <typename T>
@@ -367,63 +430,65 @@ T clamp(T value, T minVal, T maxVal) {
   return value;
 }
 
-int odomTrack() {
-  double prevX = 0.0, prevY = 0.0;
-  double prevHeading = DrivetrainInertial.rotation();
+// Move to a specific coordinate
+void moveFor(double targetD, double slowDownDist) {
+  double maxSpeed = 50;
+  const double tolerance = 0.3;
+
+  YTracking.resetPosition();
+  double targetHeading = DrivetrainInertial.heading();
+  double error = 0;
+  double intergral = 0;
+  double derivative = 0;
+  double correction;
+  double prevError =0;
 
   while (true) {
-    // Read sensors
-    double currX = degToInches(XTracking.position(degrees));
-    double currY = degToInches(YTracking.position(degrees));
-    double headingDeg = DrivetrainInertial.rotation();
-    double headingChange = (headingDeg - prevHeading) * degToRad;
+    double currentHeading = DrivetrainInertial.heading();
+    error = angleError(targetHeading, currentHeading);
 
-    double dX = currX - prevX;
-    double dY = currY - prevY;
+    intergral += error;
+    derivative = error - prevError;
 
-    prevX = currX;
-    prevY = currY;
-    prevHeading = headingDeg;
+    correction = (Kii*intergral)+(Kdd*derivative)+(Kpp*error);
 
-    headingRad = headingDeg * degToRad;
+    double pos = degToInches(YTracking.position(degrees));
+    double distanceLeft = targetD - pos;
 
-    // Local motion correction (due to rotation)
-    double localX = dX - (headingChange * sideWheelOffset);
-    double localY = dY + (headingChange * forwardWheelOffset);
+    if (distanceLeft <= tolerance) break;
 
-    // Convert local to global coordinates
-    xPos += localX * cos(headingRad) - localY * sin(headingRad);
-    yPos += localX * sin(headingRad) + localY * cos(headingRad);
+    // slow down near target
+    double speed = maxSpeed;
+    if (distanceLeft < slowDownDist) {
+      speed = maxSpeed * (distanceLeft / (1.23*slowDownDist));
+    }else if(distanceLeft>(0.9*(targetD))){
+      speed = maxSpeed * ((1.15*(0.9*(targetD)))/distanceLeft);
+    }
+    
+    // minimum speed to avoid stalling
+    if (speed < 6) speed = 6;
 
-    wait(10, msec);
-  }
-  return 0;
-}
 
-// Move to a specific coordinate
-void moveFor(double targetD) {
-  double speed = 20;
-  double slowDownRadius= 10.0;
-  double Pos =0.0;
-  const double tolerance = 0.5; // inches
-  YTracking.resetPosition();
-  while (fabs(targetD-Pos) > tolerance) {
-    Pos = degToInches(YTracking.position(degrees));
 
-    double delta = targetD - Pos;
-    LeftDriveSmart.spin(fwd, speed, pct);
-    RightDriveSmart.spin(fwd, speed, pct);
+    LeftDriveSmart.spin(fwd, speed+correction, pct);
+    RightDriveSmart.spin(fwd, speed-correction, pct);
+
+    prevError = error;
 
     wait(20, msec);
   }
 
-  LeftDriveSmart.stop();
-  RightDriveSmart.stop();
+  LeftDriveSmart.stop(brake);
+  RightDriveSmart.stop(brake);
 }
+
+
+
+
 
 /*----------------------/\------------------------*/
 /*                                                */
-/*               ODOMETRY SYSTEM                  */
+/*       ODOMETRY SYSTEM  and other PIDs          */
 /*                    ||||                        */
 /*                                                */
 /*------------------------------------------------*/
@@ -514,18 +579,21 @@ void run( void ) {
         break;
       }
     }
+
     wait(10, msec);
   }
   Brain.Screen.clearScreen();
   Controller1.Screen.clearScreen();
   wait(150, msec);
 }
+
+
 void jitter(int dmsec){
-  int steps = dmsec / 400;
+  int steps = dmsec / 425;
   for(int i =0; i<=steps ;i++){
-    Drivetrain.setDriveVelocity(55, percent);
+    Drivetrain.setDriveVelocity(50, percent);
     Drivetrain.drive(forward);
-    wait(250, msec);
+    wait(275, msec);
     Drivetrain.drive(reverse);
     wait(150, msec);
     Drivetrain.stop();
@@ -553,7 +621,6 @@ int loadingScreen(){
 
     Brain.Screen.drawImageFromFile("logoscreen5.png",25,0);
     wait(160, msec);
-
   }
   return 0;
 }
@@ -586,3 +653,4 @@ int controllerUpdating(){
   }
   return 0;
 }
+

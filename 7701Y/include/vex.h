@@ -20,7 +20,6 @@ extern digital_out matchLoad;
 extern digital_out middleGoal;
 extern digital_out descore;
 extern motor_group allIntake;
-extern rotation XTracking;
 extern rotation YTracking;
 
 extern inertial DrivetrainInertial;
