@@ -22,11 +22,11 @@ bool descoreToggle = false;
 //These booleans are used so only one button has to be pressed to do an action
 //This is because button presses are detected many times in a second, so it would just go on and off without bound.
 
-float Kpp = 0.4;   // Proportional gain for both PIDs
-float Kp = 0.4;
-float Ki = 0.0;   // Integral gain for PID
+float Kpp = 0.4;   // Proportional gain for driving PIDs
+float Kp = 0.4;    // Proportional gain for turning PID
+float Ki = 0.0;   // Integral gain for turning PID
 float Kii = 0.00; //Integral gain for driving PID
-float Kd = 0.0;   // Derivative gain for PID
+float Kd = 0.0;   // Derivative gain for turning PID
 float Kdd = 0.16; // Derivative gain for drving PID
 float driveangle;
 
@@ -347,13 +347,13 @@ void turn_to_angle(float targetAngle, bool test) {
         float P = Kp * error;
         
         // Integral term
-        integral += error * Brain.Timer.value();
+        integral += error;
 
 
         float I = Ki * integral;
         
         // Derivative term
-        derivative = (error - previousError)/Brain.Timer.value();
+        derivative = (error - previousError);
         float D = Kd * derivative;
         
         float KL = 1;
@@ -417,7 +417,6 @@ double yPos = 0.0;
 double headingRad = 0.0;
 
 const double wheelRadius = 1.1; // inches (2" diameter / 2)
-const double degToRad = 3.14159265 / 180.0;
 
 double degToInches(double deg) {
   return ((deg * 3.14159265)/ 180.0) * wheelRadius;
@@ -442,36 +441,39 @@ void moveFor(double targetD, double slowDownDist) {
   double derivative = 0;
   double correction;
   double prevError =0;
-
   while (true) {
     double currentHeading = DrivetrainInertial.heading();
     error = angleError(targetHeading, currentHeading);
 
     intergral += error;
-    derivative = error - prevError;
+    derivative = (error - prevError);
 
     correction = (Kii*intergral)+(Kdd*derivative)+(Kpp*error);
 
     double pos = degToInches(YTracking.position(degrees));
-    double distanceLeft = targetD - pos;
+    double distanceLeft = targetD - (abs(pos));
 
     if (distanceLeft <= tolerance) break;
 
     // slow down near target
     double speed = maxSpeed;
-    if (distanceLeft < slowDownDist) {
-      speed = maxSpeed * (distanceLeft / (1.23*slowDownDist));
-    }else if(distanceLeft>(0.9*(targetD))){
-      speed = maxSpeed * ((1.15*(0.9*(targetD)))/distanceLeft);
+    if (abs(distanceLeft) < slowDownDist) {
+      speed = maxSpeed * (abs(distanceLeft) / (1.23*slowDownDist));
+    }else if(abs(distanceLeft)>(0.9*(abs(targetD)))){
+      speed = maxSpeed * ((1.15*(0.9*(abs(targetD))))/abs(distanceLeft));
     }
     
     // minimum speed to avoid stalling
     if (speed < 6) speed = 6;
 
 
-
-    LeftDriveSmart.spin(fwd, speed+correction, pct);
-    RightDriveSmart.spin(fwd, speed-correction, pct);
+    if (targetD >= 0){
+      LeftDriveSmart.spin(fwd, speed+correction, pct);
+      RightDriveSmart.spin(fwd, speed-correction, pct);
+    }else{
+      LeftDriveSmart.spin(reverse, speed-correction, pct);
+      RightDriveSmart.spin(reverse, speed+correction, pct);
+    }
 
     prevError = error;
 
