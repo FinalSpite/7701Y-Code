@@ -49,18 +49,10 @@ double angleError(double target, double current) {
     if (error < -180) error += 360;
     return error;
 }
-
 // define a task that will handle monitoring inputs from Controller1
 int rc_auto_loop_function_Controller1() {
   // process the controller input every 20 milliseconds
-  // update the motors based on the input values
-  double iterationsofPID = 0;
-  double targetHeading = 0;
-  double error = 0;
-  double intergral = 0;
-  double derivative = 0;
-  double prevError;
-  double correction = 0;
+  // update the motors based on the input value
 
   while(true) {
     if(RemoteControlCodeEnabled) {
@@ -97,36 +89,6 @@ int rc_auto_loop_function_Controller1() {
 
       double deadzone = 0.18;
 
-
-      
-      //This is a PID that adjusts the speed of the sides of the robot by the difference in the headindg based
-      // previous heading of the robot
-      if(abs(Controller1.Axis1.position())<=7){
-        if(iterationsofPID == 0){
-          targetHeading = DrivetrainInertial.heading();
-        }
-        error = angleError(targetHeading, currentHeading);
-
-        intergral += error;
-        derivative = error-prevError;
-
-        correction = (Kpp * error) + (Kii * intergral) + (Kdd * derivative);
-
-
-        prevError = error;
-
-
-      }else{
-        iterationsofPID = 0;
-        intergral =0;
-        derivative =0;
-        error =0;
-        prevError =0;
-        correction = 0;
-      }
-
-
-
       // check if the value is inside of the deadband range
       if (drivetrainLeftSideSpeed < deadzone && drivetrainLeftSideSpeed > -deadzone) {
         // check if the left motor has already been stopped
@@ -156,7 +118,6 @@ int rc_auto_loop_function_Controller1() {
       // only tell the left drive motor to spin if the values are not in the deadband range
       if (DrivetrainLNeedsToBeStopped_Controller1) {
         double leftVelocity = (drivetrainLeftSideSpeed*abs(drivetrainLeftSideSpeed))/(GlobalSpeedValue);
-        leftVelocity -=correction;
 
         LeftDriveSmart.setVelocity(leftVelocity, percent);
         LeftDriveSmart.spin(forward);
@@ -165,7 +126,6 @@ int rc_auto_loop_function_Controller1() {
       // only tell the right drive motor to spin if the values are not in the deadband range
       if (DrivetrainRNeedsToBeStopped_Controller1) {
         double rightVelocity = (drivetrainRightSideSpeed*abs(drivetrainRightSideSpeed))/(GlobalSpeedValue);
-        rightVelocity +=correction;
 
         RightDriveSmart.setVelocity(rightVelocity, percent);
         RightDriveSmart.spin(forward);
